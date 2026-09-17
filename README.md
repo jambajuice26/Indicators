@@ -27,24 +27,6 @@ Use Export / Import to move state between devices or hand it to another analyst.
 
 ---
 
-## Setup on GitHub Pages
-
-1. Create a repository. Public is fine; the tracking data is not in the repo.
-2. Upload `index.html` (and this README). The filename matters — Pages serves
-   `index.html` at the bare URL.
-3. Settings → Pages → Source: **Deploy from a branch** → branch `main`, folder `/ (root)`.
-4. Wait ~60 seconds. The URL appears at the top of that same settings page:
-   `https://<username>.github.io/<repo>/`
-5. On iOS, open in Safari → Share → **Add to Home Screen** for a standalone app icon.
-
-To edit afterwards: open `index.html` in GitHub, click the pencil, commit. The live site
-rebuilds in about 30 seconds, and you get version history on every change to the framework.
-
-**Note on iOS:** opening the file locally from the Files app will *not* work. iOS Safari
-does not execute JavaScript in `file://` documents. It must be hosted. On macOS, Windows
-and Linux it opens directly from disk with no server.
-
----
 
 ## The model
 
