@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strategic Indicator Console — 2026–2028</title>
+<style>
+:root{
+  --bg:#f7f6f3;--panel:#fff;--panel2:#f1efea;--ink:#1a1917;--ink2:#55514a;--ink3:#8a847a;
+  --line:#e0ddd5;--line2:#cfcabf;
+  --dorm:#8a847a;--dormbg:#eceae4;--watch:#a8630f;--watchbg:#fbf0dd;
+  --trig:#a82020;--trigbg:#fbe4e2;--acc:#2f5d50;--accbg:#e4ede9;--accline:#9dc0b3;
+  --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15151a;--panel:#1e1e24;--panel2:#26262d;--ink:#ecebe9;--ink2:#a9a5a0;--ink3:#7c7873;
+  --line:#2e2e36;--line2:#3d3d46;
+  --dorm:#8a857f;--dormbg:#26262d;--watch:#e0a54f;--watchbg:#33291a;
+  --trig:#ef7b72;--trigbg:#361f1e;--acc:#7db9a4;--accbg:#1c2a26;--accline:#33564b;
+}}
+:root[data-theme="dark"]{
+  --bg:#15151a;--panel:#1e1e24;--panel2:#26262d;--ink:#ecebe9;--ink2:#a9a5a0;--ink3:#7c7873;
+  --line:#2e2e36;--line2:#3d3d46;
+  --dorm:#8a857f;--dormbg:#26262d;--watch:#e0a54f;--watchbg:#33291a;
+  --trig:#ef7b72;--trigbg:#361f1e;--acc:#7db9a4;--accbg:#1c2a26;--accline:#33564b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:18px 14px 90px}
+h1{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 4px}
+.sub{color:var(--ink2);font-size:13px;margin:0}
+.bar{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 0}
+button{font-family:inherit;cursor:pointer}
+.btn{border:1px solid var(--line2);background:var(--panel);color:var(--ink2);
+  border-radius:7px;padding:7px 12px;font-size:12.5px;transition:.12s}
+.btn:hover{border-color:var(--ink3);color:var(--ink)}
+.btn.pri{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
+.btn.pri:hover{opacity:.88;color:var(--bg)}
+
+.counts{display:flex;gap:8px;margin:14px 0}
+.ct{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ct b{display:block;font-size:21px;line-height:1.1;font-family:var(--mono);font-weight:700}
+.ct span{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+.ct.w b{color:var(--watch)}.ct.t b{color:var(--trig)}
+
+input[type=search]{width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line2);
+  border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;margin:10px 0 8px}
+input[type=search]:focus{outline:2px solid var(--acc);outline-offset:-1px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.chip{border:1px solid var(--line2);background:var(--panel);color:var(--ink2);border-radius:999px;
+  padding:5px 10px;font-size:12px;transition:.12s}
+.chip:hover{border-color:var(--ink3)}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.group{margin-top:22px}
+.group h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);
+  font-weight:700;margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:13px;margin-bottom:9px}
+.card.s-watch{border-color:var(--watch)}
+.card.s-triggered{border-color:var(--trig);background:var(--trigbg)}
+.nm{font-weight:650;font-size:14.5px;line-height:1.35}
+.code{font-family:var(--mono);font-size:10.5px;color:var(--ink3);letter-spacing:.04em}
+.fld{margin-top:8px;font-size:13px;line-height:1.5;color:var(--ink2)}
+.fld .lab{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);
+  font-weight:700;display:block;margin-bottom:1px}
+.trg .val{color:var(--ink);font-family:var(--mono);font-size:12px;background:var(--panel2);
+  padding:6px 8px;border-radius:6px;display:block;line-height:1.45}
+.card.s-triggered .trg .val{background:rgba(128,128,128,.13)}
+.srow{display:flex;gap:5px;margin-top:11px;align-items:center;flex-wrap:wrap}
+.sb{flex:1;min-width:72px;border:1px solid var(--line2);background:transparent;color:var(--ink3);
+  border-radius:7px;padding:6px 4px;font-size:11.5px;transition:.12s}
+.sb:hover{border-color:var(--ink3);color:var(--ink2)}
+.sb.dormant[aria-pressed=true]{background:var(--dormbg);color:var(--dorm);border-color:var(--dorm);font-weight:600}
+.sb.watch[aria-pressed=true]{background:var(--watchbg);color:var(--watch);border-color:var(--watch);font-weight:600}
+.sb.triggered[aria-pressed=true]{background:var(--trigbg);color:var(--trig);border-color:var(--trig);font-weight:600}
+.nbtn{background:none;border:none;color:var(--acc);font-size:11.5px;padding:6px 4px;
+  text-decoration:underline;text-underline-offset:2px}
+textarea{width:100%;margin-top:8px;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);
+  border-radius:7px;padding:8px;font-family:inherit;font-size:13px;resize:vertical;min-height:56px}
+textarea:focus{outline:2px solid var(--acc);outline-offset:-1px}
+
+/* analysis */
+#brief{background:var(--panel);border:1px solid var(--accline);border-radius:12px;
+  padding:16px;margin:16px 0 4px;display:none}
+#brief.on{display:block}
+#brief h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--acc);
+  margin:0 0 3px;font-weight:700}
+#brief h4{font-size:13px;margin:16px 0 5px;color:var(--ink);font-weight:700;
+  text-transform:uppercase;letter-spacing:.05em}
+#brief h4:first-of-type{margin-top:12px}
+#brief p{margin:0 0 9px;font-size:14px;line-height:1.62;color:var(--ink2)}
+#brief p strong{color:var(--ink);font-weight:650}
+.synd{background:var(--panel2);border-left:3px solid var(--trig);border-radius:0 7px 7px 0;
+  padding:9px 12px;margin:8px 0;font-size:13px;line-height:1.5}
+.synd b{color:var(--trig);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.nxt{list-style:none;padding:0;margin:4px 0 0}
+.nxt li{border-bottom:1px solid var(--line);padding:9px 0;font-size:13.5px;line-height:1.45}
+.nxt li:last-child{border-bottom:none}
+.nxt .r{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--bg);
+  background:var(--ink3);border-radius:4px;padding:1px 5px;margin-right:6px;vertical-align:1px}
+.nxt .r.hi{background:var(--trig)}
+.nxt .why{display:block;color:var(--ink3);font-size:12px;margin-top:2px}
+.axbar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px}
+.axbar .an{width:180px;color:var(--ink2);flex:none}
+.axtrack{flex:1;height:7px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.axfill{height:100%;background:var(--acc);border-radius:4px}
+.axfill.hot{background:var(--trig)}
+.axv{width:34px;text-align:right;font-family:var(--mono);color:var(--ink3);flex:none}
+.note{font-size:12px;color:var(--ink3);line-height:1.55}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:22px 0}
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;
+  color:var(--ink3);line-height:1.6}
+@media(max-width:560px){.axbar .an{width:120px;font-size:11.5px}}
+@media print{.bar,.chips,.srow,input[type=search],.counts,footer{display:none!important}
+  .card{break-inside:avoid}#brief{border-color:#999}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Strategic Indicator Console</h1>
+<p class="sub">2026&ndash;2028 scenario tracking with conditional inference. Runs entirely in this browser; nothing is transmitted.</p>
+
+<div class="bar">
+  <button class="btn pri" id="run">Run analysis</button>
+  <button class="btn" id="copy">Copy brief</button>
+  <button class="btn" id="exp">Export state</button>
+  <button class="btn" id="imp">Import</button>
+  <button class="btn" id="clr">Clear all</button>
+  <button class="btn" id="thm">Theme</button>
+</div>
+<input type="file" id="file" accept=".json" hidden>
+
+<div id="brief"></div>
+
+<div class="counts">
+  <div class="ct"><b id="c-all">0</b><span>Indicators</span></div>
+  <div class="ct w"><b id="c-w">0</b><span>Watch</span></div>
+  <div class="ct t"><b id="c-t">0</b><span>Triggered</span></div>
+</div>
+
+<input type="search" id="q" placeholder="Search indicators…">
+<div class="chips" id="f-th"></div>
+<div class="chips" id="f-st"></div>
+
+<div id="list"></div>
+
+<footer>
+  Indicators are diagnostic, not predictive. A trigger means a branch became materially more likely, not that it will occur.
+  The inference engine is deterministic and rule-based: it reports what the selected combination implies under the model's
+  assumptions, not an independent forecast. Cross-theatre correlation carries more weight than any single trigger.
+  Source reliability and access tier are the analyst's call at the point of collection.
+</footer>
+</div>
+
+<script>
+/* ══════════════ AXES ══════════════ */
+const AX={
+ fiscal:{l:"US fiscal / monetary credibility"},
+ choke:{l:"Maritime chokepoint security"},
+ alliance:{l:"Alliance cohesion & extended deterrence"},
+ prolif:{l:"Proliferation pressure"},
+ fragment:{l:"State fragmentation risk"},
+ resource:{l:"Resource & minerals contest"},
+ blocs:{l:"Monetary / trade bloc realignment"},
+ water:{l:"Water & climate conflict"},
+ escal:{l:"Great-power escalation"}
+};
+
+/* ══════════════ INDICATORS ══════════════ */
+/* ax = axis weights · nx = indicators that rise in priority once this fires */
+const IND=[
+/* ── US FISCAL & MONETARY ── */
+{id:"F01",t:"US fiscal & monetary",n:"10-year term premium (ACM)",s:"Whether fiscal risk is being priced into the safe asset itself.",g:"Sustained above 100bp for three months, or a 40bp rise unmatched by real yields.",ax:{fiscal:3},nx:["F02","F03","F06"]},
+{id:"F02",t:"US fiscal & monetary",n:"Long-duration auction quality",s:"Direct demand at the maturities that fund the deficit.",g:"30-year bid-to-cover below 2.20, or two consecutive tails above 2bp. Watch indirect allotment share.",ax:{fiscal:3,blocs:1},nx:["F03","F06","F07"]},
+{id:"F03",t:"US fiscal & monetary",n:"Safe-haven reflex test",s:"The single most important dollar indicator. Does a global shock still send money INTO Treasuries?",g:"Any major shock day where gold and CHF rally while the 10-year sells off. Once is noise; twice is a regime change.",ax:{fiscal:5,blocs:3},nx:["F06","F07","B03"]},
+{id:"F04",t:"US fiscal & monetary",n:"Fed independence under Warsh",s:"Whether the institutional premium is being priced back out after the Powell investigation and the Cook removal attempt.",g:"A cut markets read as politically directed (5y5y breakevens rise on easing), or overt White House direction of a rate decision.",ax:{fiscal:4},nx:["F01","F05","F03"]},
+{id:"F05",t:"US fiscal & monetary",n:"Inflation expectations de-anchoring",s:"The mechanism that converts a credibility problem into a monetary one.",g:"5y5y forward breakevens above 2.75% for a quarter, or survey expectations diverging from market pricing.",ax:{fiscal:3},nx:["F01","F04"]},
+{id:"F06",t:"US fiscal & monetary",n:"Net interest as share of federal revenue",s:"Proximity to the r>g debt-spiral threshold projected for roughly FY2031.",g:"Above 20% of revenue, or any CBO revision pulling the r>g crossover earlier than 2030.",ax:{fiscal:3},nx:["F01","F02"]},
+{id:"F07",t:"US fiscal & monetary",n:"Foreign official custody holdings",s:"Whether central banks are genuinely leaving, versus valuation effects.",g:"Three consecutive months of decline in the weekly custody series unexplained by FX moves.",ax:{fiscal:2,blocs:3},nx:["B01","B03"]},
+{id:"F08",t:"US fiscal & monetary",n:"Debt-ceiling or shutdown brinkmanship",s:"Self-inflicted damage to the one thing that must never look uncertain.",g:"Any technical default, delayed payment, or ratings action tied to political process rather than fundamentals.",ax:{fiscal:4},nx:["F02","F03"]},
+{id:"F09",t:"US fiscal & monetary",n:"Treasury market liquidity depth",s:"Whether the market can absorb size during stress — the actual definition of a reserve asset.",g:"Sustained widening of on-the-run/off-the-run spreads, or a failed-to-deliver spike in the repo market.",ax:{fiscal:3},nx:["F02","F03"]},
+{id:"F10",t:"US fiscal & monetary",n:"Fed swap-line and FIMA usage",s:"Whether the Fed is still acting as global lender of last resort — the quiet pillar of reserve status.",g:"Any refusal or conditioning of swap-line access on political grounds, or heavy FIMA repo drawdown signalling dollar scarcity.",ax:{fiscal:3,alliance:2,blocs:2},nx:["B01","B03"]},
+{id:"F11",t:"US fiscal & monetary",n:"IEEPA tariff refund execution",s:"The $165bn CIT-ordered refund is both a fiscal hole and a test of administrative capacity.",g:"Refund disbursement stalling past mid-2027, or new litigation over substitute tariff authorities.",ax:{fiscal:2},nx:["T01","T02"]},
+{id:"F12",t:"US fiscal & monetary",n:"Capital-account restriction proposals",s:"Taxes or controls on foreign holdings would end reserve status faster than any rival currency could.",g:"Any serious legislative proposal to tax, restrict, or condition foreign ownership of Treasuries.",ax:{fiscal:5,blocs:4},nx:["F07","B01","B03"]},
+
+/* ── US TRADE & SANCTIONS ── */
+{id:"T01",t:"US trade & sanctions",n:"Substitute tariff authority litigation",s:"After the IEEPA ruling, whether tariff policy is stable law or a rolling legal experiment.",g:"A second adverse ruling on Section 232/301/122 substitutes, or Congress reclaiming tariff authority explicitly.",ax:{blocs:2},nx:["F11","S03"]},
+{id:"T02",t:"US trade & sanctions",n:"US–Canada negotiation status",s:"Talks broke down in late August 2026 and Canadian counter-tariffs took effect in September.",g:"Any formal USMCA withdrawal notice, or Canadian counter-tariffs extended to energy or potash.",ax:{blocs:3,alliance:2},nx:["E12","S03"]},
+{id:"T03",t:"US trade & sanctions",n:"Secondary sanctions reaching a major Chinese bank",s:"The trigger that converts CIPS from a hedge into a necessity. Refineries are symbolic; a systemically important bank is not.",g:"Any SDN designation or Patriot Act 311 measure against a top-20 Chinese financial institution.",ax:{blocs:5,escal:3},nx:["B01","B02","C09"]},
+{id:"T04",t:"US trade & sanctions",n:"Sanctions against allied-jurisdiction entities",s:"Secondary sanctions that bite European, Japanese or Gulf firms convert allies into hedgers.",g:"Designation of a G7-domiciled bank or major corporate for third-country dealings.",ax:{alliance:3,blocs:3},nx:["B01","E09"]},
+{id:"T05",t:"US trade & sanctions",n:"Designation of sitting heads of state",s:"The Petro designation set the precedent: counter-narcotics authority used against an elected head of state.",g:"Any additional sitting head of state or government designated under OFAC authorities.",ax:{blocs:3,alliance:2},nx:["S06","S05"]},
+{id:"T06",t:"US trade & sanctions",n:"Export-control expansion to allied supply chains",s:"Whether technology controls start constraining allies rather than only adversaries.",g:"New controls requiring allied-country licensing for sales to third markets, prompting reciprocal measures.",ax:{alliance:3,resource:2},nx:["P08","E09"]},
+{id:"T07",t:"US trade & sanctions",n:"Critical-minerals offtake competition",s:"Whether Washington is winning or losing the transactional contest it has chosen to fight.",g:"Any major producer state signing exclusive offtake with China or Russia after US engagement.",ax:{resource:4,blocs:2},nx:["A11","A03","S07"]},
+{id:"T08",t:"US trade & sanctions",n:"Shipping and insurance sanctions reach",s:"Sanctioning the maritime insurance layer is where sanctions policy and chokepoint security collide.",g:"Designation of a major P&I club member or flag registry, raising freight costs system-wide.",ax:{choke:3,blocs:2},nx:["M01","M03"]},
+{id:"T09",t:"US trade & sanctions",n:"Tariffs tied to non-trade conduct",s:"Trade measures used as general-purpose coercion teach every partner to build redundancy.",g:"New tariffs explicitly tied to a third country's judicial, electoral, or foreign-policy conduct.",ax:{blocs:3,alliance:2},nx:["S03","E12"]},
+
+/* ── MIDDLE EAST CHOKEPOINTS ── */
+{id:"M01",t:"Middle East chokepoints",n:"Hormuz war-risk insurance premium",s:"The cleanest real-time escalation read. Insurers price faster than analysts.",g:"Above 2% of hull value, or any underwriter withdrawing cover for the transit entirely.",ax:{choke:4},nx:["M02","M03","M12"]},
+{id:"M02",t:"Middle East chokepoints",n:"Hormuz daily transits vs. pre-war baseline",s:"Actual throughput, not rhetoric.",g:"Below 40% of the pre-28-Feb-2026 baseline for 30 consecutive days.",ax:{choke:5},nx:["M04","M12","G01"]},
+{id:"M03",t:"Middle East chokepoints",n:"Attacks on commercial shipping per month",s:"Whether the Iranian escort regime is stabilising or degrading.",g:"Any month exceeding the July 2026 count, or a mass-casualty event above 20 seafarers.",ax:{choke:3,escal:2},nx:["M01","M02","M11"]},
+{id:"M04",t:"Middle East chokepoints",n:"Saudi Red Sea loadings at Yanbu",s:"Riyadh lost its Hormuz route and is now being attacked on its alternative. Measures whether it has any route at all.",g:"Yanbu loadings below 50% of normal for a month, or a successful strike on Ras Tanura or Abqaiq.",ax:{choke:4,escal:2},nx:["M05","M07","G01"]},
+{id:"M05",t:"Middle East chokepoints",n:"Bab el-Mandeb transits and Houthi position",s:"Whether the second chokepoint closes. Houthis gained direct Bab el-Mandeb access in September 2026.",g:"Blockade extended beyond Saudi-linked vessels to all traffic, or transits below 50% of 2025 levels.",ax:{choke:5},nx:["M02","M06","G01"]},
+{id:"M06",t:"Middle East chokepoints",n:"Suez throughput and Egyptian fiscal stress",s:"Canal revenue is a load-bearing element of Egypt's balance of payments, and Egypt is already a co-belligerent in Sudan.",g:"Suez transits below 50% of 2023 levels sustained, or an Egyptian external financing emergency.",ax:{choke:3,fragment:2},nx:["A08","A09","G02"]},
+{id:"M07",t:"Middle East chokepoints",n:"Saudi nuclear hedging language",s:"The real petrodollar risk. A Riyadh that doubts the US guarantee buys a different one.",g:"Any official Saudi statement on enrichment rights, formal extension of Pakistani nuclear guarantees, or an IAEA safeguards dispute.",ax:{prolif:5,alliance:4},nx:["W07","P01","P02"]},
+{id:"M08",t:"Middle East chokepoints",n:"Gulf states hedging toward China",s:"Security-provider substitution. Escort follows influence; settlement follows escort.",g:"Chinese naval escort of Gulf-flagged shipping, a Chinese base agreement, or major Gulf air-defence procurement from Beijing.",ax:{alliance:3,blocs:3},nx:["B01","M07"]},
+{id:"M09",t:"Middle East chokepoints",n:"US force posture in CENTCOM",s:"Whether Washington is committing to reopen the straits or managing an exit.",g:"Carrier presence dropping below one sustained, or withdrawal of assets from Gulf basing.",ax:{alliance:3,choke:3},nx:["M07","M08","P04"]},
+{id:"M10",t:"Middle East chokepoints",n:"Turkish posture in the Eastern Mediterranean",s:"Whether Ankara's indispensability play tips into coercion against NATO members.",g:"A Blue Homeland maritime incident with Greece or Cyprus involving military vessels, or a new maritime delimitation agreement.",ax:{alliance:4,escal:2},nx:["E10","M11"]},
+{id:"M11",t:"Middle East chokepoints",n:"Israel–Turkey friction in Syria and Lebanon",s:"Two US-aligned militaries deconflicting in the same space, with Israel building counterweight ties to Greece.",g:"A direct Israeli–Turkish military incident, or collapse of the Syria deconfliction channel.",ax:{escal:3,alliance:2},nx:["M10","M12"]},
+{id:"M12",t:"Middle East chokepoints",n:"Iran nuclear breakout signals",s:"The unresolved core of the war. Damaged programme, dead leadership, no agreement.",g:"IAEA loss of continuity of knowledge, enrichment above 60%, or NPT withdrawal notice.",ax:{prolif:5,escal:4},nx:["I05","M07","P01"]},
+
+/* ── IRAN INTERNAL ── */
+{id:"I01",t:"Iran internal",n:"IRGC senior command turnover",s:"Decapitated organisations fragment into competing commands. Turnover is the proxy for internal contest.",g:"Two or more command-level changes in a quarter not attributable to combat losses, or the intelligence directorate vacant past year-end.",ax:{fragment:4},nx:["I02","I03","I06"]},
+{id:"I02",t:"Iran internal",n:"Mojtaba Khamenei legitimacy signals",s:"Hereditary succession in an anti-monarchist republic is a standing wound. Visibility is the tell.",g:"Absence from Friday prayers or state occasions beyond 30 days, or a senior marja publicly withholding endorsement.",ax:{fragment:4},nx:["I01","I04","I06"]},
+{id:"I03",t:"Iran internal",n:"Peripheral insurgency tempo",s:"Kurdish, Baluch, Ahwazi and Azeri activity is what makes Iranian fracture a regional rather than internal event.",g:"Recorded attacks in two or more peripheral provinces doubling quarter-on-quarter, or any sustained territorial hold.",ax:{fragment:5,escal:2},nx:["I06","I07","M10"]},
+{id:"I04",t:"Iran internal",n:"Rial rate and provincial shutdowns",s:"Combined economic and control stress. Connectivity blackouts map unrest before reporting does.",g:"Record rial low coinciding with multi-province connectivity blackouts.",ax:{fragment:3},nx:["I02","I03"]},
+{id:"I05",t:"Iran internal",n:"Praetorian consolidation",s:"The most likely fracture outcome is not collapse but the turban becoming ceremonial and the uniform governing.",g:"Military figures assuming formal civil authority, or the Defence Council superseding the SNSC in practice.",ax:{fragment:3,escal:3},nx:["M12","I03"]},
+{id:"I06",t:"Iran internal",n:"Kurdish autonomy movement across borders",s:"The variable that makes Iranian fracture a Turkish problem — Ankara fears a US- and Israel-aligned Kurdish bloc more than it fears Tehran.",g:"Any de facto autonomous administration in Iranian Kurdistan, or Turkish cross-border operations into Iran.",ax:{fragment:4,escal:3},nx:["M10","M11","I03"]},
+{id:"I07",t:"Iran internal",n:"Proxy network command autonomy",s:"Whether Hezbollah, the Iraqi militias and the Houthis are still directed or now self-tasking.",g:"Proxy operations that Tehran publicly disclaims, or an Axis actor negotiating separately.",ax:{fragment:3,choke:2,escal:2},nx:["M05","M03"]},
+{id:"I08",t:"Iran internal",n:"Refugee and displacement outflows",s:"The transmission mechanism that moves Iranian instability into Turkey, Iraq, the Gulf and onward to Europe.",g:"Sustained outflows above 100k/quarter, or Turkish or Iraqi border closures.",ax:{fragment:3},nx:["I03","M10","E11"]},
+
+/* ── EUROPE & NATO ── */
+{id:"E01",t:"Europe & NATO",n:"Further US force reductions in Europe",s:"Whether 5,000 from Germany plus the cancelled Poland armoured rotation is the floor or the first step.",g:"Any announcement covering Spain, Italy or the Baltic rotational presence.",ax:{alliance:4},nx:["E02","E03","E09"]},
+{id:"E02",t:"Europe & NATO",n:"US nuclear-sharing commitments",s:"The conventional drawdown is survivable; the nuclear guarantee is not substitutable.",g:"Any reduction in forward-deployed weapons, withdrawal from nuclear-sharing arrangements, or conditioning of the guarantee.",ax:{alliance:5,prolif:5},nx:["E03","P01","P02"]},
+{id:"E03",t:"Europe & NATO",n:"European independent deterrent discussion",s:"The response function to a conditional US guarantee. French and British arsenals are the only near-term options.",g:"Formal Franco-German or Franco-Polish extended-deterrence talks, or a German parliamentary debate on nuclear options.",ax:{prolif:4,alliance:3},nx:["E04","U03","P01"]},
+{id:"E04",t:"Europe & NATO",n:"European defence spending conversion rate",s:"Whether the 5% pledge becomes capability or stays an accounting exercise.",g:"Actual procurement contracts below 60% of pledged increases two years running.",ax:{alliance:3},nx:["E01","E05"]},
+{id:"E05",t:"Europe & NATO",n:"EU SAFE programme disbursement",s:"The €173bn rearmament vehicle, now with Canada as the first non-European member.",g:"Disbursement materially behind schedule, or member states blocking joint procurement over national industrial interests.",ax:{alliance:2,resource:1},nx:["E04","E12"]},
+{id:"E06",t:"Europe & NATO",n:"Baltic undersea infrastructure incidents",s:"Moscow's cheapest, most deniable probe. The likeliest first move.",g:"Three or more cable or pipeline incidents in a quarter, or one attributable incident with no NATO response within 30 days.",ax:{escal:3,alliance:3},nx:["E07","E08","R02"]},
+{id:"E07",t:"Europe & NATO",n:"Suwałki / Kaliningrad transit friction",s:"Tests whether Europe responds without Washington, now that the Poland armoured rotation is cancelled.",g:"Any manufactured transit dispute, airspace closure or border incident lasting beyond 72 hours.",ax:{escal:4,alliance:3},nx:["E06","E08","R03"]},
+{id:"E08",t:"Europe & NATO",n:"Article 5 ambiguity test",s:"The alliance survives on the assumption it is never tested. A test that produces hesitation is worse than no test.",g:"Any incident where consultations are invoked and produce no collective response within a week.",ax:{alliance:5,escal:3},nx:["E03","P01","E02"]},
+{id:"E09",t:"Europe & NATO",n:"Greenland friction with Denmark and the EU",s:"The territorial red line Europe has been willing to draw, unlike trade.",g:"Escalation beyond consular and rhetorical — a basing demand, a referendum push, or Danish invocation of EU solidarity clauses.",ax:{alliance:4,escal:2},nx:["R05","E12","U02"]},
+{id:"E10",t:"Europe & NATO",n:"Turkish veto leverage inside NATO",s:"Ankara is more central to the alliance than at any point since the Cold War, and is monetising it.",g:"Turkish blocking of a major alliance decision, or formal linkage of NATO cooperation to bilateral demands.",ax:{alliance:3},nx:["M10","M11"]},
+{id:"E11",t:"Europe & NATO",n:"European political realignment",s:"Whether governments that would reassess NATO or EU commitments reach power in major states.",g:"A party committed to reducing NATO or EU obligations entering government in France, Germany, Italy, Poland or Spain.",ax:{alliance:4,blocs:2},nx:["E03","E04"]},
+{id:"E12",t:"Europe & NATO",n:"Canada–EU formalisation",s:"Whether 'associate member state' becomes real — the clearest signal US alliance gravity has genuinely weakened.",g:"Montreal summit or successor producing formal status language rather than sectoral access only.",ax:{blocs:4,alliance:3},nx:["T02","E05"]},
+
+/* ── RUSSIA, ARCTIC & GIUK ── */
+{id:"R01",t:"Russia, Arctic & GIUK",n:"Russian submarine sortie rate",s:"Detection is being pushed north as Russian boats get quieter. A hard GIUK challenge is the least likely probe but highest-consequence.",g:"Publicly acknowledged NATO ASW surge, or Norwegian/UK statements on unprecedented activity.",ax:{escal:3,alliance:2},nx:["R02","U03","R06"]},
+{id:"R02",t:"Russia, Arctic & GIUK",n:"Influence operations on independence movements",s:"Moscow is already targeting Scottish and Greenlandic independence specifically to weaken the GIUK posture. The most elegant available move: unattributable, and it works through legitimate democratic process.",g:"Attributed state-backed campaigns in Scotland, Greenland, the Faroes or Iceland, or a sudden anomalous polling shift.",ax:{alliance:4,escal:2},nx:["U01","E09","U03"]},
+{id:"R03",t:"Russia, Arctic & GIUK",n:"Russian force reconstitution rate",s:"How fast Moscow can generate an option, which sets the timeline for everything else on this board.",g:"Restoration of pre-2022 ground-force readiness in the Western Military District, or renewed mass mobilisation.",ax:{escal:4},nx:["E07","E06","R04"]},
+{id:"R04",t:"Russia, Arctic & GIUK",n:"Ukraine settlement terms and durability",s:"A settlement that frees Russian forces is not a de-escalation for NATO's eastern flank.",g:"Any armistice permitting redeployment of Russian formations northward or westward.",ax:{escal:4,alliance:2},nx:["R03","E07","E06"]},
+{id:"R05",t:"Russia, Arctic & GIUK",n:"Northern Sea Route commercial traffic",s:"If southern chokepoints close, Russia becomes the tollbooth on the alternative.",g:"Sustained growth in non-Russian transits, or Chinese commercial commitment to NSR infrastructure.",ax:{choke:2,blocs:3,resource:2},nx:["R06","C08"]},
+{id:"R06",t:"Russia, Arctic & GIUK",n:"Arctic militarisation and Svalbard status",s:"The legally ambiguous piece of NATO's northern geography.",g:"Russian military activity on or around Svalbard, or a challenge to the Treaty's terms.",ax:{escal:4,alliance:3},nx:["R01","E08"]},
+{id:"R07",t:"Russia, Arctic & GIUK",n:"GUGI deep-sea activity near cables",s:"The specialised capability that makes undersea infrastructure attacks precise rather than opportunistic.",g:"Detected activity near transatlantic cable landings, or unexplained outages on redundant routes.",ax:{escal:3},nx:["E06","R01"]},
+{id:"R08",t:"Russia, Arctic & GIUK",n:"Russia–China military integration depth",s:"Whether the partnership becomes operational rather than declaratory.",g:"Joint patrols in NATO's area of responsibility, technology transfer in submarine quieting, or a mutual-assistance clause.",ax:{escal:4,blocs:3},nx:["C08","P05"]},
+{id:"R09",t:"Russia, Arctic & GIUK",n:"Sanctioned-asset seizure and retaliation",s:"Confiscation of immobilised reserves would be the strongest possible signal to every non-aligned reserve manager.",g:"Full confiscation rather than profit-transfer, or retaliatory seizure of Western assets.",ax:{blocs:4,escal:2},nx:["F07","B01","B03"]},
+
+/* ── UK CONSTITUTIONAL ── */
+{id:"U01",t:"UK constitutional",n:"Scottish independence polling",s:"The highest-leverage, lowest-cost attack on NATO's northern flank — and it runs through legitimate democratic process.",g:"Yes above 55% in three consecutive non-partisan polls, or Westminster conceding a referendum date.",ax:{alliance:4},nx:["U03","U04","R02"]},
+{id:"U02",t:"UK constitutional",n:"Northern Ireland border-poll threshold",s:"The Good Friday Agreement obliges a poll once polling indicates it would pass. That is a mechanical trigger, not a political choice.",g:"Sustained majority support for unification, or a UK government concession that the threshold is met.",ax:{alliance:2},nx:["U01","U05"]},
+{id:"U03",t:"UK constitutional",n:"Faslane contingency planning",s:"The mechanism by which a constitutional question becomes a nuclear one. There is no easy English or Welsh alternative.",g:"Any MoD statement, leaked study or parliamentary answer acknowledging alternative basing work.",ax:{alliance:4,prolif:3},nx:["U01","E03","R01"]},
+{id:"U04",t:"UK constitutional",n:"Devolved-administration coordination",s:"The Cardiff pact turned three separate questions into one constitutional bloc.",g:"Joint legal action against Westminster, or a coordinated unofficial referendum.",ax:{alliance:2},nx:["U01","U02"]},
+{id:"U05",t:"UK constitutional",n:"UK fiscal and gilt-market stress",s:"Constitutional uncertainty prices into gilts before it appears anywhere else.",g:"Gilt yields decoupling from Bund and Treasury moves on constitutional news, or a ratings action citing union risk.",ax:{alliance:2,fiscal:1},nx:["U01","U03"]},
+{id:"U06",t:"UK constitutional",n:"UK government stability",s:"Four prime ministers in four years is itself a variable for a nuclear-armed P5 member.",g:"Another change of prime minister, or a general election called before term.",ax:{alliance:2},nx:["U01","U04"]},
+
+/* ── INDO-PACIFIC ── */
+{id:"P01",t:"Indo-Pacific",n:"Japanese nuclear-latency debate",s:"The highest-consequence branch point on the board. Japan has the plutonium, the enrichment capacity and the delivery systems — not the political decision.",g:"Formal Diet debate on the three non-nuclear principles, a cabinet-level NPT posture review, or a leadership statement leaving the option open.",ax:{prolif:5,alliance:3},nx:["P02","P03","P06"]},
+{id:"P02",t:"Indo-Pacific",n:"South Korean nuclear discourse",s:"Moves in tandem with Japan and often leads it in polling.",g:"ROK request for enrichment/reprocessing consent revision, or sustained majority support across two quarters.",ax:{prolif:5,alliance:3},nx:["P01","P03"]},
+{id:"P03",t:"Indo-Pacific",n:"US extended-deterrence reassurance signals",s:"The variable that determines whether P01 and P02 stay theoretical.",g:"Cancellation of nuclear consultative mechanisms, withdrawal of assets from Japan or Korea, or public conditioning of the guarantee.",ax:{alliance:5,prolif:4},nx:["P01","P02","P04"]},
+{id:"P04",t:"Indo-Pacific",n:"US force posture in the Western Pacific",s:"Read against the CENTCOM drawdown — allies are measuring consistency, not statements.",g:"Reduction of forward-deployed forces in Japan, Korea, Guam or the Philippines.",ax:{alliance:4},nx:["P03","P01","P07"]},
+{id:"P05",t:"Indo-Pacific",n:"PLA activity around Taiwan",s:"A Chinese planner watching Hormuz draws conclusions about quarantine viability.",g:"Any quarantine or inspection regime applied to Taiwan-bound shipping, as distinct from exercises.",ax:{escal:5,choke:3},nx:["P06","P07","P09"]},
+{id:"P06",t:"Indo-Pacific",n:"Japan–Australia relationship language",s:"They have moved from partnership to quasi-alliance — frigate exports, joint undersea surveillance, the Darwin–Okinawa link. The word 'alliance' would be the marker.",g:"A formal mutual-defence clause, or Japanese entry into AUKUS Pillar I rather than Pillar II only.",ax:{alliance:2,prolif:1},nx:["P01","P07"]},
+{id:"P07",t:"Indo-Pacific",n:"Malacca and alternative-strait routing",s:"Practical read on whether Asian shippers still believe anyone underwrites sea lanes.",g:"Sustained tonnage shift to Lombok or Sunda, or national convoy regimes announced by any Asian state.",ax:{choke:4},nx:["P08","P05","G01"]},
+{id:"P08",t:"Indo-Pacific",n:"Chinese naval escort of neutral shipping",s:"If Beijing escorts where Washington will not, it buys the security-provider claim cheaply — and settlement follows escort.",g:"Chinese escort operations beyond the Gulf of Aden, or a Chinese-led convoy regime in Southeast Asian waters.",ax:{blocs:4,alliance:3,choke:2},nx:["B01","M08","P07"]},
+{id:"P09",t:"Indo-Pacific",n:"Semiconductor supply concentration events",s:"Taiwan risk expressed as an economic rather than military variable.",g:"Any disruption to Taiwanese fabrication output, or accelerated allied onshoring driven by a specific incident.",ax:{resource:4,escal:2},nx:["P05","G06"]},
+{id:"P10",t:"Indo-Pacific",n:"Philippines–China maritime incidents",s:"The likeliest place a US treaty commitment gets tested in Asia.",g:"Any incident causing Filipino fatalities, or invocation of the Mutual Defense Treaty.",ax:{escal:4,alliance:4},nx:["P05","P04","E08"]},
+{id:"P11",t:"Indo-Pacific",n:"Japanese and Korean fuel-security measures",s:"Both depend on sea lanes nobody is currently securing. Stockpiling is the tell.",g:"Emergency reserve builds, long-term contracts at above-market prices, or state-backed tanker acquisition.",ax:{choke:3,resource:2},nx:["P07","P01"]},
+{id:"P12",t:"Indo-Pacific",n:"ASEAN alignment drift",s:"Whether Southeast Asia hedges toward the Japan–Australia architecture or toward Beijing.",g:"Any ASEAN state signing a defence agreement with China, or conversely joining AUKUS-adjacent arrangements.",ax:{blocs:3,alliance:2},nx:["P08","P06"]},
+
+/* ── CHINA INTERNAL ── */
+{id:"C01",t:"China internal",n:"Leadership visibility gaps",s:"Succession opacity is itself a strategic variable — it is why unverified rumours propagate so easily. Absence is unfalsifiable, so measure it consistently rather than reacting to claims.",g:"Unexplained absence from scheduled state functions beyond 21 days. Note: the September 2026 BRICS rumour failed this test — the schedule was kept.",ax:{fragment:3},nx:["C02","C03","C04"]},
+{id:"C02",t:"China internal",n:"CMC and Politburo personnel churn",s:"Distinguishes 'Xi loses control, Party holds' from 'factional contest'. The seam is civil-Party versus PLA, not liberal versus hardline.",g:"Two or more CMC-level removals in a quarter, or any Standing Committee change outside a Congress cycle.",ax:{fragment:4,escal:2},nx:["C03","C05","P05"]},
+{id:"C03",t:"China internal",n:"Succession signalling",s:"No designated successor is the core structural risk. Any designation would be stabilising; the absence is not.",g:"Elevation of a plausible successor, or constitutional/Party rule changes affecting succession.",ax:{fragment:3},nx:["C01","C02"]},
+{id:"C04",t:"China internal",n:"LGFV and provincial fiscal distress",s:"If the Party ever loses control of China it starts as balance sheets in Guangdong, not tanks in Tiananmen.",g:"A provincial-level payment failure Beijing declines to backstop, or multiple LGFV defaults in one quarter.",ax:{fragment:4},nx:["C05","C06","C07"]},
+{id:"C05",t:"China internal",n:"Offshore spread and outflow proxies",s:"Elite confidence, measured by where elites put money.",g:"CNH/CNY spread above 1,000bp, or reimposition of hard capital controls.",ax:{fragment:3,blocs:2},nx:["C04","C06"]},
+{id:"C06",t:"China internal",n:"Property sector and household balance sheets",s:"The slow variable that constrains every fast one, including military adventurism.",g:"Renewed developer defaults at scale, or a sustained fall in household deposits.",ax:{fragment:3},nx:["C04","C05"]},
+{id:"C07",t:"China internal",n:"Internal security spending and unrest",s:"The regime's own risk assessment, expressed in budget lines.",g:"Internal security budget growth outpacing defence, or multi-province protest events.",ax:{fragment:3},nx:["C04","C06"]},
+{id:"C08",t:"China internal",n:"CIPS transaction volume and RMB settlement share",s:"The actual de-dollarisation metric, as opposed to summit communiqués.",g:"CIPS volume growth accelerating after any secondary-sanctions event, or RMB share of trade settlement above 8%.",ax:{blocs:5},nx:["B01","B03","T03"]},
+{id:"C09",t:"China internal",n:"Chinese response to financial coercion",s:"Whether Beijing retaliates symmetrically or escalates into rare earths and export controls.",g:"Rare-earth export restrictions, Treasury sales at scale, or designation of US financial institutions.",ax:{blocs:4,resource:4,escal:3},nx:["G06","F07","T03"]},
+
+/* ── SOUTH ASIA & WATER ── */
+{id:"W01",t:"South Asia & water",n:"Indus Waters Treaty status",s:"The most dangerous water indicator. In abeyance since April 2025 with flow-data sharing suspended — the machinery built to adjudicate exactly this class of event is switched off.",g:"Restoration of data sharing (de-escalatory), or completion of a Chenab diversion milestone (escalatory).",ax:{water:5,escal:3},nx:["W02","W03","W04"]},
+{id:"W02",t:"South Asia & water",n:"Glacial outburst risk in disputed basins",s:"Langtang Lirung happened in the best case — a border with no rival army and no dispute. Scientists say a second failure at that site is possible.",g:"Any GLOF or ice-rock avalanche in a basin under active dispute. Casualties will be attributed politically, not hydrologically.",ax:{water:5,escal:3},nx:["W01","W05","W08"]},
+{id:"W03",t:"South Asia & water",n:"Pakistan external position",s:"Extended chokepoint disruption hits Pakistan as a balance-of-payments crisis in months. Roughly a fifth of its electricity is hydro, so fuel scarcity raises the value of the water India is constraining.",g:"FX reserves below two months of imports, IMF programme lapse, or emergency load-shedding beyond seasonal norms.",ax:{fragment:4,water:3},nx:["W01","W04","W06"]},
+{id:"W04",t:"South Asia & water",n:"Saudi–Pakistan nuclear arrangement",s:"Pakistan is monetising its position as the Sunni world's nuclear guarantor while inside the Saudi coalition. India reads this correctly and unhappily.",g:"Formal extension of the 2025 defence pact to explicit nuclear guarantees, or an Indian doctrinal response.",ax:{prolif:5,escal:3},nx:["M07","W06","P01"]},
+{id:"W05",t:"South Asia & water",n:"Yarlung Tsangpo / Great Bend dam milestones",s:"A failure or emergency release upstream of Arunachal Pradesh — territory China claims — needs no malice to become a casus belli.",g:"Impoundment start, or any unannounced release affecting downstream flow in India or Bangladesh.",ax:{water:5,escal:3},nx:["W02","W08","P05"]},
+{id:"W06",t:"South Asia & water",n:"India–Pakistan military signalling",s:"The conventional escalation ladder, now with a water rung at the bottom of it.",g:"Cross-border strikes, mobilisation, or any change in declared nuclear doctrine on either side.",ax:{escal:5,prolif:3},nx:["W01","W04","W03"]},
+{id:"W07",t:"South Asia & water",n:"India's alignment drift",s:"Delhi hedges between Washington, Moscow and its own autonomy. Tariff pressure and Pakistan policy both push the same direction.",g:"Reduced US defence cooperation, expanded Russian or Chinese procurement, or India–Mercosur/BRICS instruments deepening.",ax:{blocs:3,alliance:2},nx:["S03","B02","C08"]},
+{id:"W08",t:"South Asia & water",n:"Mekong basin flow disputes",s:"Upstream Chinese dams plus a flood event pushes Southeast Asia toward the Japan–Australia architecture.",g:"Unannounced releases causing downstream casualties, or Mekong River Commission breakdown.",ax:{water:4,blocs:2},nx:["P12","W05"]},
+{id:"W09",t:"South Asia & water",n:"Himalayan early-warning system status",s:"The single cheapest de-escalation measure available anywhere on this board, and the clearest test of whether anyone is trying.",g:"Bilateral or multilateral GLOF warning agreements signed — or conversely, existing monitoring being withdrawn.",ax:{water:3},nx:["W02","W01"]},
+{id:"W10",t:"South Asia & water",n:"Bangladesh and delta stress",s:"150 million people downstream of two contested river systems, with climate exposure and political fragility.",g:"Major displacement events, political instability, or water disputes with both India and China simultaneously.",ax:{water:3,fragment:3},nx:["W05","W08"]},
+
+/* ── AFRICA ── */
+{id:"A01",t:"Africa",n:"JNIM economic-strangulation campaigns",s:"The 2025 Bamako fuel blockade was a model shift: from attrition to economic siege of capitals. Mali's defence minister was killed in April 2026.",g:"A repeat blockade of Bamako, Ouagadougou or Niamey beyond 30 days, or a capital actually falling.",ax:{fragment:5},nx:["A02","A03","A12"]},
+{id:"A02",t:"Africa",n:"Coastal West Africa spillover",s:"Converts a landlocked security problem into a maritime and energy one.",g:"Sustained attack tempo in Benin, Togo, Ghana or Côte d'Ivoire above the 2026 baseline, or any attack on port or offshore infrastructure.",ax:{fragment:4,choke:2,resource:2},nx:["A01","A11","A12"]},
+{id:"A03",t:"Africa",n:"Sahel security-partner realignment",s:"The juntas are diversifying from Russia toward Turkey and others as Wagner successor forces underperform.",g:"New defence agreements with Turkey, China or Gulf states, or Russian withdrawal from a Sahel state.",ax:{resource:3,blocs:2},nx:["A11","A12","T07"]},
+{id:"A04",t:"Africa",n:"Rubaya coltan control and the M23 ceasefire",s:"Rubaya produces roughly 15% of global coltan and funds M23 at about $800k a month. The Washington accords tied peace to US minerals access, so the deal and the ceasefire stand or fall together.",g:"Ceasefire mechanism collapsing, or Rwandan withdrawal and FDLR neutralisation deadlines being missed.",ax:{resource:5,fragment:3},nx:["A05","A11","T07"]},
+{id:"A05",t:"Africa",n:"Great Lakes regional widening",s:"Rwanda–Burundi is the adjacent powder keg to the DRC conflict.",g:"Direct Rwanda–Burundi hostilities, or Ugandan or Burundian force commitments inside the DRC expanding.",ax:{fragment:4,escal:2},nx:["A04","A06"]},
+{id:"A06",t:"Africa",n:"RSF operations launched from Ethiopian territory",s:"Sudan's war has become an interstate proxy conflict on the Blue Nile — Geisan and Kurmuk fell in August 2026, almost certainly from Ethiopian soil.",g:"Sudanese strikes inside Ethiopia, or an RSF advance up the Nile valley into the central agricultural belt.",ax:{fragment:5,escal:3,water:2},nx:["A07","A08","A09"]},
+{id:"A07",t:"Africa",n:"Ethiopia–Eritrea: the Assab question",s:"Sea-access insistence has driven both to the brink, with border mobilisations. Interstate war in the Horn would close a third maritime approach.",g:"Any cross-border movement, or a formal Ethiopian claim to Assab.",ax:{escal:5,fragment:3,choke:2},nx:["A06","A08","M05"]},
+{id:"A08",t:"Africa",n:"GERD and Nile flow as a war trigger",s:"Egypt is already a co-belligerent in Sudan. A dam dispute plus a proxy war plus an Ethiopia–Eritrea mobilisation is three overlapping conflicts on one river system.",g:"Any unilateral filling or release decision affecting Egyptian supply, or Egyptian military signalling toward Ethiopia.",ax:{water:5,escal:4},nx:["A06","A07","M06"]},
+{id:"A09",t:"Africa",n:"Egyptian internal stability",s:"110 million people, canal revenue under pressure, and a war on two borders.",g:"Currency crisis, IMF programme breakdown, or large-scale unrest.",ax:{fragment:4,choke:2},nx:["M06","A08"]},
+{id:"A10",t:"Africa",n:"Sahel monetary de-linking",s:"Small in value, large in precedent. A template others may copy.",g:"Launch of a Sahelian currency, or any ECOWAS member announcing CFA exit.",ax:{blocs:3},nx:["A03","B02"]},
+{id:"A11",t:"Africa",n:"Critical-minerals alignment",s:"The actual great-power contest in Africa — cobalt, copper, coltan, lithium, uranium — now fought transactionally rather than through development finance.",g:"Any major producer state signing exclusive offtake with China or Russia, or nationalising Western-held assets.",ax:{resource:5,blocs:3},nx:["T07","A04","G06"]},
+{id:"A12",t:"Africa",n:"Nigerian stability and energy output",s:"Africa's largest economy, ISWAP in the north-east, banditry in the north-west, and a load-bearing oil sector.",g:"Sustained output below 1.2mb/d, major urban attacks, or a constitutional crisis.",ax:{fragment:4,resource:3},nx:["A02","A11"]},
+
+/* ── SOUTH AMERICA ── */
+{id:"S01",t:"South America",n:"Venezuela post-intervention stability",s:"Maduro was removed by force in January 2026. The question is whether Venezuela produces oil or produces an insurgency — and this is the template other states are reading for how Washington behaves.",g:"Production failing to recover toward 1mb/d, organised armed resistance emerging, or US forces still operating past Q1 2027.",ax:{fragment:4,resource:3,blocs:2},nx:["S02","S06","S08"]},
+{id:"S02",t:"South America",n:"Essequibo and Guyanese output",s:"Guyana is a material new supplier precisely as Gulf supply becomes unreliable. The intervention put Venezuela's claim on ice — but ice melts.",g:"Renewed Venezuelan military posture toward Essequibo, or a maritime incident near the Stabroek block.",ax:{resource:4,escal:2},nx:["S01","G01"]},
+{id:"S03",t:"South America",n:"Mercosur–China agreement",s:"The clearest measure of whether US coercive trade policy is producing the opposite of its intent in the hemisphere.",g:"Signature of a Mercosur–China framework, or EU–Mercosur ratification completing.",ax:{blocs:5},nx:["S04","S05","B02"]},
+{id:"S04",t:"South America",n:"Brazil–Argentina rupture",s:"Representation was downgraded to chargé d'affaires in August 2026. Mercosur cannot function with its two largest members estranged.",g:"Argentine withdrawal from Mercosur, or a Brazilian election result that flips Brasília's alignment.",ax:{blocs:3},nx:["S03","S05"]},
+{id:"S05",t:"South America",n:"Hemispheric settlement currency share",s:"The quiet one. If Latin American commodity trade clears in RMB at scale, that is a larger de-dollarisation event than anything announced at a summit.",g:"Major Brazilian, Chilean or Peruvian commodity contracts denominated in RMB, or a PBOC swap line drawn rather than merely signed.",ax:{blocs:5},nx:["B01","B03","C08"]},
+{id:"S06",t:"South America",n:"Regional response to intervention precedent",s:"Whether January 2026 produces acquiescence or a hedging cascade across the hemisphere.",g:"Coordinated regional condemnation with substance — recall of ambassadors, OAS action, or new non-US security arrangements.",ax:{blocs:4,alliance:2},nx:["S03","S05","T05"]},
+{id:"S07",t:"South America",n:"Lithium triangle alignment",s:"Argentina, Chile and Bolivia hold the reserves; the question is who processes and who offtakes.",g:"Exclusive Chinese offtake agreements, or nationalisation affecting Western-held concessions.",ax:{resource:4,blocs:2},nx:["T07","A11","S04"]},
+{id:"S08",t:"South America",n:"Argentine peso and US Treasury support",s:"Alignment underwritten by a swap line is alignment with a maturity date.",g:"Swap line lapsing or being drawn heavily, renewed currency crisis, or IMF programme breakdown.",ax:{fragment:3,blocs:2},nx:["S04","S03"]},
+{id:"S09",t:"South America",n:"Colombia post-designation trajectory",s:"A designated sitting president is a precedent with a second act.",g:"Rupture of US–Colombia security cooperation, or an election outcome that institutionalises the break.",ax:{blocs:3,fragment:2},nx:["T05","S06"]},
+{id:"S10",t:"South America",n:"Migration and hemispheric instability flows",s:"Venezuelan and Central American displacement is the domestic-political transmission channel back into US policy.",g:"Renewed mass outflows from Venezuela, or new displacement crises in Ecuador, Peru or Haiti.",ax:{fragment:3},nx:["S01","S09"]},
+
+/* ── GLOBAL SYSTEMIC ── */
+{id:"G01",t:"Global systemic",n:"Brent and the persistent risk premium",s:"The aggregate price of every chokepoint on this board.",g:"Sustained above $120, or a structural premium above $25 versus fundamentals-implied pricing.",ax:{choke:3,fiscal:2},nx:["G02","G03","M02"]},
+{id:"G02",t:"Global systemic",n:"LNG price dislocation",s:"Roughly a fifth of LNG moved through Hormuz before the war. Europe and Asia compete for the same cargoes.",g:"Asian and European benchmarks converging at crisis levels, or force majeure on Qatari volumes.",ax:{choke:3,resource:3},nx:["G01","P11","E04"]},
+{id:"G03",t:"Global systemic",n:"Food price and fertiliser transmission",s:"The mechanism that converts an energy shock into political instability across the Global South.",g:"Grain or fertiliser indices at 2022 peaks, or export restrictions imposed by two or more major producers.",ax:{fragment:4},nx:["A09","A12","G04"]},
+{id:"G04",t:"Global systemic",n:"Emerging-market debt distress",s:"Around 40% of African countries are in or near debt distress. A dollar squeeze plus a food shock is the classic sequence.",g:"Three or more sovereign defaults in a year, or G20 Common Framework breakdown.",ax:{fragment:4,blocs:3},nx:["G03","A10","B02"]},
+{id:"G05",t:"Global systemic",n:"Shipping capacity and freight rates",s:"Rerouting consumes tonnage. Capacity scarcity is inflation with a lag.",g:"Container and tanker rates at pandemic peaks, or war-risk areas expanding to cover a third chokepoint.",ax:{choke:4},nx:["G01","M05","P07"]},
+{id:"G06",t:"Global systemic",n:"Rare-earth and processing chokepoints",s:"The non-maritime chokepoint. Concentration here is higher than for oil and there is no strategic reserve.",g:"Export restrictions from China, or a processing facility disruption with no substitute capacity.",ax:{resource:5,blocs:3},nx:["C09","A11","P09"]},
+{id:"G07",t:"Global systemic",n:"Gold as share of official reserves",s:"Gold surpassed Treasuries in official reserves in 2025, though mostly on price. Physical accumulation is the honest signal.",g:"Sustained physical accumulation above 2024–25 rates by non-sanctioned central banks.",ax:{blocs:4,fiscal:2},nx:["F07","B01","B03"]},
+{id:"G08",t:"Global systemic",n:"Cyber attack on financial infrastructure",s:"The fastest route from geopolitical tension to systemic financial event.",g:"Any attack disrupting settlement, clearing or exchange operations in a G7 market.",ax:{escal:4,fiscal:3},nx:["F09","R07"]},
+
+/* ── BLOC & MONETARY REALIGNMENT ── */
+{id:"B01",t:"Bloc realignment",n:"Non-dollar commodity invoicing share",s:"Invoicing alone never mattered much. It matters once the proceeds stop being recycled into dollar assets.",g:"Any major producer invoicing AND holding proceeds outside the dollar, rather than converting.",ax:{blocs:5},nx:["B03","C08","G07"]},
+{id:"B02",t:"Bloc realignment",n:"BRICS institutional substance",s:"Distinguishing communiqué from capability. The NDB's lending currency mix is the real metric.",g:"NDB local-currency lending share above 30%, a functioning cross-border payment link, or a settlement unit actually in use.",ax:{blocs:4},nx:["C08","B01","S05"]},
+{id:"B03",t:"Bloc realignment",n:"Reserve-manager behaviour under stress",s:"The test is not what they hold in calm but what they buy in a crisis.",g:"A crisis episode where official-sector flows go to gold, Bunds or JGBs rather than Treasuries.",ax:{blocs:5,fiscal:4},nx:["F03","G07","F07"]},
+{id:"B04",t:"Bloc realignment",n:"Alternative payment-rail redundancy",s:"CIPS, mBridge, bilateral links. Redundancy built in peacetime is used in wartime.",g:"Any G20 economy conducting material trade settlement outside dollar correspondent banking as standard practice.",ax:{blocs:5},nx:["C08","B01","T03"]},
+{id:"B05",t:"Bloc realignment",n:"Regional currency arrangements",s:"Sahel currency, Gulf arrangements, Mercosur instruments — individually marginal, collectively a pattern.",g:"Two or more regional monetary arrangements becoming operational within a year.",ax:{blocs:3},nx:["A10","S05","B02"]},
+{id:"B06",t:"Bloc realignment",n:"Sovereign wealth fund allocation shifts",s:"Where the surplus actually goes. State banks and pension funds now hold what central banks used to.",g:"Disclosed material reallocation away from US assets by Gulf, Norwegian, Singaporean or Japanese funds.",ax:{blocs:4,fiscal:3},nx:["F07","B03"]}
+];
+
+/* ══════════════ SYNDROMES ══════════════ */
+/* need: array of arrays — each inner array is an OR set; all outer sets must be satisfied */
+const SYN=[
+{id:"safehaven",name:"Safe-haven break",need:[["F03"],["F01","F02","F09"]],
+ txt:"The reflex that underwrites reserve status is failing. This is not gradual erosion — it is the specific event that ends the dollar's crisis privilege, and it tends to be recognised only in retrospect.",
+ worst:"A funding event arrives with no safe-haven bid to absorb it, and the Fed's options are constrained by both inflation and credibility."},
+{id:"twochoke",name:"Two-chokepoint squeeze",need:[["M02","M01"],["M05","M04"]],
+ txt:"Both southern maritime approaches are compromised simultaneously. Saudi Arabia has no export route; Asian importers face structural scarcity rather than a temporary disruption.",
+ worst:"Oil above $150 revives the inflation fight precisely when monetary credibility is weakest, and Gulf states conclude the US guarantee is worthless."},
+{id:"deterrence",name:"Extended-deterrence collapse",need:[["M07","W04","E02","P03"],["P01","P02","E03"]],
+ txt:"Allies on two continents are simultaneously reassessing whether the US nuclear guarantee holds. Proliferation decisions are sticky — once taken they do not reverse, and they cascade.",
+ worst:"A multi-polar nuclear order emerges within a decade, with three or four new arsenals and none of the Cold War's escalation-management infrastructure."},
+{id:"northern",name:"Northern flank hollowing",need:[["E01","E02"],["U01","U03","R02"]],
+ txt:"US conventional withdrawal and a live British constitutional question are compounding. Faslane basing uncertainty degrades GIUK anti-submarine coverage at the moment Russian sortie rates are rising.",
+ worst:"NATO's northern approaches become contestable without a shot being fired, through entirely legitimate democratic processes Moscow has merely amplified."},
+{id:"probe",name:"Deniable probe sequence",need:[["E06","R07"],["E07","R06","E08"]],
+ txt:"Moscow is running the low-cost playbook: undersea infrastructure plus a transit or territorial friction point, each individually below any Article 5 threshold.",
+ worst:"A response gap becomes visible and is then tested at a higher level, with the alliance having already demonstrated hesitation."},
+{id:"railsexit",name:"Sanctions overreach to rails exit",need:[["T03","T04","R09"],["C08","B01","B04","S05"]],
+ txt:"Financial coercion has crossed from adversaries into systemically important institutions, and alternative settlement infrastructure is absorbing the displaced volume. This is the one de-dollarisation pathway that is self-reinforcing.",
+ worst:"Payment-rail redundancy built under duress becomes permanent, and sanctions lose their bite exactly when they are most needed."},
+{id:"watercb",name:"Water casus belli",need:[["W01","W05","A08"],["W02","W06","A07"]],
+ txt:"A disputed basin has an active political quarrel AND an active physical risk, with the adjudication machinery suspended. Mass casualties from a natural event will be attributed politically rather than hydrologically.",
+ worst:"Two nuclear-armed states enter a crisis over an event neither caused, with no agreed data to establish what actually happened."},
+{id:"nile",name:"Nile basin cascade",need:[["A06","A08"],["A07","A09"]],
+ txt:"Three overlapping conflicts on one river system: a Sudanese proxy war fought from Ethiopian territory, an Ethiopia–Eritrea mobilisation, and a dam dispute with a co-belligerent Egypt.",
+ worst:"State failure in Sudan combines with Egyptian fiscal crisis and Horn interstate war, closing a third maritime approach and displacing millions."},
+{id:"chinacontest",name:"Chinese succession contest",need:[["C01","C03"],["C02","C04","C05"]],
+ txt:"Leadership uncertainty is coinciding with institutional churn or fiscal stress. The seam is civil-Party versus PLA; a contested succession arbitrated by the CMC produces a more nationalist outcome, not a more liberal one.",
+ worst:"External assertion becomes the cheapest available legitimacy for whoever wins, and Taiwan risk rises rather than falls."},
+{id:"iranfrac",name:"Iranian fracture in progress",need:[["I01","I02","I05"],["I03","I06","I04"]],
+ txt:"A weak centre and armed peripheries simultaneously. The realistic model is Pakistan with a worse neighbourhood and ninety million people, not Syria 2011.",
+ worst:"A multi-year ungoverned space astride a quarter of seaborne oil, with Turkish, Israeli, Saudi and Pakistani interests all engaged in the periphery."},
+{id:"sahel",name:"Sahel state failure",need:[["A01"],["A02","A12","A03"]],
+ txt:"Economic strangulation of capitals is spreading toward the Gulf of Guinea littoral, converting a landlocked insurgency into a maritime and energy problem.",
+ worst:"A capital falls, the coastal states are drawn in, and the minerals that Western supply chains are pivoting toward become inaccessible."},
+{id:"hemisphere",name:"Hemispheric drift",need:[["S03","S05","S06"],["T02","T05","S04","T09"]],
+ txt:"Coercive trade and intervention policy are producing alignment shifts in the Western Hemisphere — the one region where US primacy was never seriously contested.",
+ worst:"The Monroe premise inverts: the hemisphere becomes a contested region requiring active management rather than a secure base."},
+{id:"resourcelock",name:"Resource access lock-out",need:[["G06","A11","T07"],["C09","A04","S07","P09"]],
+ txt:"The non-maritime chokepoints — rare earths, coltan, lithium, semiconductor fabrication — are consolidating outside Western access at the same time maritime routes are degrading.",
+ worst:"Rearmament programmes on two continents are constrained by inputs, exactly when the security environment requires them most."}
+];
+
+/* ══════════════ AXIS NARRATIVE ══════════════ */
+const AXTXT={
+fiscal:{likely:"the dollar keeps reserve status by default rather than merit, with a structurally higher term premium and a thinner cushion for the next crisis",
+ best:"fiscal deterioration stays slow enough that no forcing event arrives before the political system produces a correction",
+ worst:"a funding event arrives while inflation constrains the Fed and credibility is already impaired, converting a slow problem into a fast one",
+ hi:"At this level the question stops being whether the dollar is displaced and becomes whether it can absorb a shock at all."},
+choke:{likely:"freight, insurance and rerouting costs become permanent rather than cyclical, and war-risk underwriters rather than navies effectively decide which routes exist",
+ best:"a durable escort or settlement arrangement — plausibly brokered by Gulf states, Pakistan or China rather than Washington — collapses the risk premium",
+ worst:"simultaneous closures put oil above $150 and force Asian importers into national convoy regimes, fragmenting maritime security along national lines",
+ hi:"Deterrence is indivisible: every planner in the Pacific is reading the Gulf outcome as precedent."},
+alliance:{likely:"allies hedge rather than defect — building redundancy quietly while maintaining formal commitments, which looks stable right up until it is tested",
+ best:"drawdowns are absorbed as planned burden-shifting because European and Pacific capability arrives fast enough to make the transition legible",
+ worst:"an Article 5 or treaty commitment is tested and produces visible hesitation, after which every guarantee in the system is repriced simultaneously",
+ hi:"The guarantee is now conditional in practice, and allied capitals are planning on that basis whatever they say publicly."},
+prolif:{likely:"latent capability states move from taboo to debate — slowly, deniably, and in ways that are hard to reverse once begun",
+ best:"reassurance arrives early and specifically enough that the debates stay theoretical",
+ worst:"three or four new arsenals emerge within a decade, without the Cold War's escalation-management infrastructure or the decades of doctrine that produced it",
+ hi:"Proliferation decisions are sticky and they cascade: each one lowers the political cost of the next."},
+fragment:{likely:"weak centres and armed or fiscally distressed peripheries produce contested spaces rather than clean collapses, which are harder to plan against than either stability or failure",
+ best:"fragmentation stays contained within borders and does not become an arena for external competition",
+ worst:"multi-year ungoverned spaces emerge adjacent to critical infrastructure or chokepoints, drawing in regional powers with incompatible objectives",
+ hi:"At this level the relevant model is Pakistan or Libya, not a clean transition — expect competing commands, not competing parties."},
+resource:{likely:"input access becomes a strategic constraint on rearmament and energy transition simultaneously, with producer states extracting rising rents from the competition",
+ best:"diversification and processing investment mature before any single lock-out becomes binding",
+ worst:"rearmament programmes on two continents are constrained by inputs precisely when the security environment requires them most",
+ hi:"The non-maritime chokepoints have higher concentration than oil and no strategic reserve behind them."},
+blocs:{likely:"the world de-reservifies rather than de-dollarises — dollars shift from central-bank reserves into state banks and pension funds, and redundant rails get built in peacetime for use later",
+ best:"alternatives remain inconvenient enough that network effects hold, and sanctions stay rare enough not to justify the switching cost",
+ worst:"payment-rail redundancy built under duress becomes permanent, and financial coercion loses its bite exactly when it is most needed",
+ hi:"This is the one de-dollarisation pathway that is genuinely self-reinforcing: each coercive act funds its own workaround."},
+water:{likely:"climate events land inside pre-existing attribution disputes, where the politics rather than the hydrology decides who is blamed",
+ best:"data-sharing and early-warning arrangements are restored, which is the cheapest de-escalation available anywhere on this board",
+ worst:"a mass-casualty natural event becomes indistinguishable from an act of war to the affected population, with no agreed data to establish otherwise",
+ hi:"The adjudication machinery built for exactly this class of event has been dismantled in the last eighteen months."},
+escal:{likely:"probing continues below response thresholds, with each unanswered probe establishing a new baseline",
+ best:"responses are proportionate and prompt enough that the probing stops being cheap",
+ worst:"a response gap becomes visible and is then tested at a higher level against an alliance that has already demonstrated hesitation",
+ hi:"Multiple actors are now testing simultaneously, which means any single miscalculation has more than one path to widening."}
+};
+
+/* ══════════════ STATE ══════════════ */
+const KEY="sic.v1";
+let ST={}, open=new Set(), F={t:null,s:null}, Q="";
+
+function load(){try{const r=localStorage.getItem(KEY);if(r)ST=JSON.parse(r)||{}}catch(e){ST={}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
+const stat=id=>(ST[id]&&ST[id].status)||"dormant";
+const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML};
+const THEATRES=[...new Set(IND.map(i=>i.t))];
+
+/* ══════════════ RENDER ══════════════ */
+function chips(){
+  document.getElementById("f-th").innerHTML=
+    '<button class="chip" data-f="t:" aria-pressed="'+(!F.t)+'">All theatres</button>'+
+    THEATRES.map(t=>'<button class="chip" data-f="t:'+t+'" aria-pressed="'+(F.t===t)+'">'+t+'</button>').join("");
+  document.getElementById("f-st").innerHTML=
+    '<button class="chip" data-f="s:" aria-pressed="'+(!F.s)+'">Any status</button>'+
+    [["dormant","Dormant"],["watch","Watch"],["triggered","Triggered"]].map(a=>
+      '<button class="chip" data-f="s:'+a[0]+'" aria-pressed="'+(F.s===a[0])+'">'+a[1]+'</button>').join("");
+}
+
+function render(){
+  const q=Q.toLowerCase();
+  const sh=IND.filter(i=>{
+    if(F.t&&i.t!==F.t)return false;
+    if(F.s&&stat(i.id)!==F.s)return false;
+    if(q&&!(i.n+" "+i.s+" "+i.g+" "+i.id).toLowerCase().includes(q))return false;
+    return true;
+  });
+  let h="";
+  for(const th of THEATRES){
+    const it=sh.filter(i=>i.t===th); if(!it.length)continue;
+    h+='<div class="group"><h2>'+th+' <span class="code">'+it.length+'</span></h2>';
+    for(const i of it){
+      const s=stat(i.id), nt=(ST[i.id]&&ST[i.id].note)||"", op=open.has(i.id);
+      h+='<div class="card s-'+s+'"><div class="nm">'+i.n+' <span class="code">'+i.id+'</span></div>'+
+        '<div class="fld"><span class="lab">Signals</span>'+i.s+'</div>'+
+        '<div class="fld trg"><span class="lab">Trigger threshold</span><span class="val">'+i.g+'</span></div>'+
+        '<div class="srow">'+
+        ["dormant","watch","triggered"].map(k=>'<button class="sb '+k+'" data-set="'+i.id+':'+k+'" aria-pressed="'+(s===k)+'">'+k[0].toUpperCase()+k.slice(1)+'</button>').join("")+
+        '<button class="nbtn" data-note="'+i.id+'">'+(op?"Hide":(nt?"Note ✓":"+ Note"))+'</button></div>'+
+        (op?'<textarea data-txt="'+i.id+'" placeholder="Observations, dates, sources…">'+esc(nt)+'</textarea>':'')+
+        '</div>';
+    }
+    h+='</div>';
+  }
+  document.getElementById("list").innerHTML=h||'<div class="empty">No indicators match.</div>';
+  document.getElementById("c-all").textContent=IND.length;
+  document.getElementById("c-w").textContent=IND.filter(i=>stat(i.id)==="watch").length;
+  document.getElementById("c-t").textContent=IND.filter(i=>stat(i.id)==="triggered").length;
+}
+
+/* ══════════════ INFERENCE ENGINE ══════════════ */
+function analyse(){
+  const trig=IND.filter(i=>stat(i.id)==="triggered");
+  const watch=IND.filter(i=>stat(i.id)==="watch");
+  const box=document.getElementById("brief");
+  if(!trig.length&&!watch.length){
+    box.className="on";
+    box.innerHTML='<h3>Analysis</h3><p>No indicators are set. Mark at least one as <strong>Watch</strong> or <strong>Triggered</strong>, then run the analysis.</p>';
+    return;
+  }
+
+  /* axis scores: triggered = 1.0, watch = 0.4 */
+  const raw={}; for(const k in AX) raw[k]=0;
+  trig.forEach(i=>{for(const k in i.ax) raw[k]+=i.ax[k]});
+  watch.forEach(i=>{for(const k in i.ax) raw[k]+=i.ax[k]*0.4});
+  const max=Math.max(1,...Object.values(raw));
+  const axes=Object.keys(raw).map(k=>({k,v:raw[k],n:raw[k]/max}))
+    .filter(a=>a.v>0).sort((a,b)=>b.v-a.v);
+  const top=axes.filter(a=>a.n>=.45).slice(0,4);
+  const hot=axes.filter(a=>a.n>=.8).map(a=>a.k);
+
+  /* syndromes */
+  const tset=new Set(trig.map(i=>i.id)), wset=new Set(watch.map(i=>i.id));
+  const fired=[], near=[];
+  for(const s of SYN){
+    const met=s.need.map(set=>set.some(id=>tset.has(id)));
+    const soft=s.need.map(set=>set.some(id=>tset.has(id)||wset.has(id)));
+    if(met.every(Boolean)) fired.push(s);
+    else if(soft.every(Boolean)||met.filter(Boolean).length===s.need.length-1){
+      const missing=s.need.filter((set,ix)=>!met[ix]).flat().filter(id=>!tset.has(id));
+      if(missing.length) near.push({s,missing:missing.slice(0,3)});
+    }
+  }
+
+  /* watch-next ranking */
+  const score={};
+  const bump=(id,w,why)=>{if(tset.has(id))return;
+    if(!score[id])score[id]={w:0,why:new Set()};
+    score[id].w+=w; score[id].why.add(why);};
+  trig.forEach(i=>(i.nx||[]).forEach(id=>bump(id,3,"follows "+i.id)));
+  watch.forEach(i=>(i.nx||[]).forEach(id=>bump(id,1,"follows "+i.id)));
+  near.forEach(o=>o.missing.forEach(id=>bump(id,5,"completes “"+o.s.name+"”")));
+  IND.forEach(i=>{ if(tset.has(i.id))return;
+    let m=0; for(const k in i.ax) if(hot.includes(k)) m+=i.ax[k];
+    if(m>=4) bump(i.id,2,"loads a saturated axis"); });
+  const next=Object.keys(score).map(id=>({i:IND.find(x=>x.id===id),...score[id]}))
+    .filter(o=>o.i).sort((a,b)=>b.w-a.w).slice(0,10);
+
+  /* prose */
+  const join=(arr,last)=>arr.length<2?arr[0]||"":arr.slice(0,-1).join(", ")+" "+(last||"and")+" "+arr[arr.length-1];
+  const axName=k=>AX[k].l.toLowerCase();
+  const T=(k,c)=>AXTXT[k][c];
+
+  const lead="<strong>"+trig.length+" triggered, "+watch.length+" on watch.</strong> "+
+    (top.length?"Pressure is concentrated on "+join(top.map(a=>axName(a.k)))+". ":"No axis is yet carrying sustained pressure. ")+
+    (fired.length?"<strong>"+fired.length+" correlation pattern"+(fired.length>1?"s have":" has")+" completed.</strong>":"No correlation pattern has completed yet.");
+
+  let likely="<p>"+lead+"</p><p>On the central path, "+
+    join(top.slice(0,3).map(a=>T(a.k,"likely")),"while")+". "+
+    (fired.length?"Because "+join(fired.map(s=>"“"+s.name+"”"))+" "+(fired.length>1?"have":"has")+" completed, this is no longer a set of independent problems — the correlation is the finding. ":"The individual triggers remain separable for now, which is the main thing keeping the central path benign. ")+
+    (hot.length?hot.map(k=>T(k,"hi")).slice(0,2).join(" "):"")+"</p>";
+
+  let best="<p>The benign path requires "+
+    join(top.slice(0,3).map(a=>T(a.k,"best")),"and")+". "+
+    (fired.length?"It also requires at least one completed correlation pattern to decouple, which historically happens through deliberate policy rather than drift — assume it will not happen on its own. ":"It mostly requires that the current triggers stay uncorrelated. ")+
+    "Several independent things must break right simultaneously, which is why this is rarely the base case.</p>";
+
+  let worst="<p>The tail runs as follows: "+
+    join(top.slice(0,3).map(a=>T(a.k,"worst")),"and simultaneously")+". "+
+    (fired.length?fired.slice(0,3).map(s=>s.worst).join(" "):"")+" "+
+    (top.length>=3?"With three or more axes under pressure at once, the compounding matters more than any single pathway — second-order effects arrive before first-order ones have resolved.":"")+"</p>";
+
+  /* assemble */
+  let h='<h3>Conditional analysis · '+new Date().toLocaleDateString(undefined,{dateStyle:"medium"})+'</h3>';
+  h+='<div style="margin:10px 0 2px">'+axes.slice(0,6).map(a=>
+    '<div class="axbar"><span class="an">'+AX[a.k].l+'</span><span class="axtrack"><span class="axfill'+
+    (a.n>=.8?" hot":"")+'" style="width:'+Math.round(a.n*100)+'%"></span></span><span class="axv">'+
+    a.v.toFixed(1)+'</span></div>').join("")+'</div>';
+
+  if(fired.length){
+    h+='<h4>Completed patterns</h4>';
+    fired.forEach(s=>{h+='<div class="synd"><b>'+s.name+'</b>'+s.txt+'</div>'});
+  }
+  if(near.length){
+    h+='<h4>One trigger away</h4>';
+    near.slice(0,4).forEach(o=>{
+      h+='<div class="synd" style="border-left-color:var(--watch)"><b style="color:var(--watch)">'+o.s.name+'</b>'+
+        'Completes if any of these fire: '+o.missing.map(id=>{
+          const x=IND.find(y=>y.id===id); return '<span class="code">'+id+'</span> '+(x?x.n:id);
+        }).join(" · ")+'</div>';
+    });
+  }
+
+  h+='<h4>Most likely</h4>'+likely;
+  h+='<h4>Best case</h4>'+best;
+  h+='<h4>Worst case</h4>'+worst;
+
+  h+='<h4>Watch next</h4><ul class="nxt">';
+  if(!next.length) h+='<li class="note">No downstream indicators are elevated by the current selection.</li>';
+  next.forEach((o,ix)=>{
+    h+='<li><span class="r'+(o.w>=5?" hi":"")+'">'+(ix+1)+'</span><strong>'+o.i.n+'</strong> <span class="code">'+o.i.id+'</span>'+
+      '<span class="why">'+[...o.why].slice(0,3).join(" · ")+' — '+o.i.t+'</span></li>';
+  });
+  h+='</ul>';
+
+  const fals=top.slice(0,2).map(a=>"If "+axName(a.k)+" indicators start reverting to dormant on their own, the model is over-weighting this axis.").join(" ");
+  h+='<h4>Falsification</h4><p class="note">'+fals+' Correlation patterns that complete and then decouple without policy intervention are the strongest evidence that the syndrome logic here is too tightly coupled. Re-run after any status change — the ranking is recomputed, not cumulative.</p>';
+
+  box.className="on"; box.innerHTML=h;
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ══════════════ EVENTS ══════════════ */
+document.addEventListener("click",e=>{
+  const f=e.target.closest("[data-f]");
+  if(f){const p=f.dataset.f.split(":");F[p[0]]=p[1]||null;chips();render();return}
+  const n=e.target.closest("[data-note]");
+  if(n){const id=n.dataset.note;open.has(id)?open.delete(id):open.add(id);render();
+    const ta=document.querySelector('[data-txt="'+id+'"]');if(ta)ta.focus();return}
+  const s=e.target.closest("[data-set]");
+  if(s){const p=s.dataset.set.split(":");
+    ST[p[0]]=Object.assign({},ST[p[0]],{status:stat(p[0])===p[1]?"dormant":p[1]});
+    save();render();return}
+});
+document.addEventListener("change",e=>{
+  const ta=e.target.closest("[data-txt]");
+  if(ta){ST[ta.dataset.txt]=Object.assign({},ST[ta.dataset.txt],{note:ta.value});save()}
+});
+document.getElementById("q").addEventListener("input",e=>{Q=e.target.value;render()});
+document.getElementById("run").addEventListener("click",analyse);
+document.getElementById("thm").addEventListener("click",()=>{
+  const cur=document.documentElement.getAttribute("data-theme");
+  const dark=cur?cur==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  document.documentElement.setAttribute("data-theme",dark?"light":"dark");
+});
+document.getElementById("copy").addEventListener("click",()=>{
+  const b=document.getElementById("brief");
+  if(!b.classList.contains("on")){alert("Run the analysis first.");return}
+  const txt=b.innerText;
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(
+    ()=>alert("Brief copied."),()=>fallback(txt));
+  else fallback(txt);
+  function fallback(t){const ta=document.createElement("textarea");ta.value=t;
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();alert("Brief copied.")}
+});
+document.getElementById("exp").addEventListener("click",async ()=>{
+  const json=JSON.stringify({v:1,saved:new Date().toISOString(),state:ST},null,2);
+  const name="indicator-state-"+new Date().toISOString().slice(0,10)+".json";
+  /* hosted context: script-started downloads are blocked, use the platform verb */
+  if(window.claude&&claude.use){
+    try{const dl=await claude.use("downloads");
+      if(dl){await dl.save({filename:name,data:json});return}
+    }catch(e){/* fall through */}
+  }
+  try{
+    const blob=new Blob([json],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download=name;a.click();URL.revokeObjectURL(a.href);
+  }catch(e){
+    if(navigator.clipboard){navigator.clipboard.writeText(json);
+      alert("Download unavailable here — state copied to clipboard instead. Paste it into a .json file.")}
+  }
+});
+function applyImport(raw){
+  try{const d=JSON.parse(raw);
+    if(d&&d.state){ST=d.state;save();render();alert("State imported.");return true}
+    alert("Unrecognised file.");
+  }catch(x){alert("Could not read that data.")}
+  return false;
+}
+document.getElementById("imp").addEventListener("click",()=>{
+  const fi=document.getElementById("file");
+  try{ fi.click(); }catch(e){ pasteImport(); }
+  /* if the picker never fires (restricted embed), offer paste after a beat */
+  setTimeout(()=>{ if(!fi.value && fi.dataset.used!=="1") {} },1);
+});
+function pasteImport(){
+  const raw=prompt("Paste exported state JSON:");
+  if(raw) applyImport(raw);
+}
+document.getElementById("file").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  e.target.dataset.used="1";
+  const r=new FileReader();
+  r.onload=()=>applyImport(r.result);
+  r.onerror=()=>pasteImport();
+  r.readAsText(f);e.target.value="";
+});
+document.getElementById("clr").addEventListener("click",()=>{
+  if(confirm("Clear all statuses and notes?")){ST={};save();render();
+    document.getElementById("brief").className=""}
+});
+
+load();chips();render();
+</script>
+</body>
+</html>
