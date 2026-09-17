@@ -129,6 +129,7 @@ footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-si
   <button class="btn" id="exp">Export state</button>
   <button class="btn" id="imp">Import</button>
   <button class="btn" id="clr">Clear all</button>
+  <button class="btn" id="base">Baseline</button>
   <button class="btn" id="thm">Theme</button>
 </div>
 <input type="file" id="file" accept=".json" hidden>
@@ -420,11 +421,66 @@ escal:{likely:"probing continues below response thresholds, with each unanswered
  hi:"Multiple actors are now testing simultaneously, which means any single miscalculation has more than one path to widening."}
 };
 
+/* ══════════════ BASELINE · 17 SEP 2026 ══════════════ */
+/* Seeded on first load. "Baseline" button restores it. Assessment, not fact —
+   overwrite freely. Notes carry the evidence and its date. */
+const SEED={
+ /* ── TRIGGERED ── */
+ M01:{status:"triggered",note:"Inferred from transit collapse and attack tempo; premium figure unverified. Confirm against broker notes."},
+ M02:{status:"triggered",note:"Transits near zero since Feb 2026; reported closed through Jul. Well below the 40% threshold."},
+ M03:{status:"triggered",note:"12+ vessels struck around Hormuz since 6 Jul 2026; 2 seafarer deaths, 12+ injured."},
+ M04:{status:"triggered",note:"Drone strikes on the East-West pipeline ~11 Sep 2026; Yanbu loadings suspended. Riyadh claims half capacity in days, full in six weeks — that estimate is the thing to track."},
+ M05:{status:"triggered",note:"Houthi blockade of Saudi-linked shipping declared 20 Jul 2026; direct Bab el-Mandeb access gained Sep 2026."},
+ F01:{status:"triggered",note:"10y at 5.01% (highest since Jul 2007), 30y at 5.34%, 16 Sep 2026. Warsh cited corporate supply competition. Elevated premium on any measure."},
+ I01:{status:"triggered",note:"Two IRGC command changes in 2026; intelligence directorate vacant since 6 Apr."},
+ E01:{status:"triggered",note:"5,000 withdrawn from Germany; Poland armoured brigade rotation (4,000+ plus fires battalion) cancelled May 2026. Spain and Italy flagged as next."},
+ T01:{status:"triggered",note:"SCOTUS struck IEEPA tariffs 6-3, 20 Feb 2026; CIT ordered ~$165bn refunded. Substitute authorities now in litigation."},
+ T02:{status:"triggered",note:"Talks collapsed late Aug 2026; Canadian counter-tariffs took effect Sep 2026."},
+ T05:{status:"triggered",note:"Petro designated under counter-narcotics authorities, Oct 2025. Precedent set; watch for a second."},
+ W01:{status:"triggered",note:"In abeyance since Apr 2025. Flow-data sharing suspended, four hydropower projects fast-tracked, Chenab-Beas tunnel proposed."},
+ A01:{status:"triggered",note:"Bamako fuel blockade Sep 2025; coordinated nationwide offensive Apr 2026; defence minister killed Apr 2026."},
+ A06:{status:"triggered",note:"RSF took Geisan (11 Aug) and Kurmuk (13 Aug 2026), almost certainly launched from Ethiopian territory. Alleged UAE backing."},
+ U04:{status:"triggered",note:"Cardiff pact signed 14 Sep 2026 by SNP, Plaid Cymru and Sinn Féin."},
+
+ /* ── WATCH · 30 day horizon ── */
+ G01:{status:"watch",note:"Brent ~$104-106, peaked $120.88 on 30 Apr 2026, +53% YoY. Structural premium limb met; the $120 limb is not. Slippage on the six-week pipeline repair is the trigger."},
+ F02:{status:"watch",note:"Next 30y auction with the benchmark at 5% is the real test. Watch indirect allotment share."},
+ F05:{status:"watch",note:"Core PCE 2% target return pushed to 2029; 2026 PCE projection raised to 3.7%. Expectations already stretched."},
+ F06:{status:"watch",note:"Every basis point of rate rise accelerates the interest-to-revenue path. Net interest already exceeds defence spending."},
+ A04:{status:"watch",note:"Rwandan withdrawal and FDLR neutralisation deadlines are end-2026 and closing. Rubaya ~15% of global coltan, ~$800k/month to M23."},
+
+ /* ── WATCH · 90 day horizon ── */
+ E12:{status:"watch",note:"Montreal summit late Oct 2026. Formal 'associate member state' language versus sectoral access only is the distinction that matters."},
+ S04:{status:"watch",note:"Brazil downgraded representation to chargé d'affaires Aug 2026. Brazilian election result is the branch point."},
+ W03:{status:"watch",note:"Oil above $100 plus hydro constraint plus IWT suspension. Balance-of-payments stress is the transmission, not Kashmir."},
+ G03:{status:"watch",note:"Classic lagged sequence from an energy shock. Watch grain and fertiliser indices against 2022 peaks."},
+ G04:{status:"watch",note:"~40% of African states in or near debt distress. Dollar squeeze plus food shock is the standard pattern."},
+ A09:{status:"watch",note:"Suez throughput down, co-belligerent in Sudan, GERD unresolved. 110 million people."},
+ U01:{status:"watch",note:"Swinney demanding a referendum within five years; Burnham says off limits. Watch for post-Cardiff polling movement."},
+ I02:{status:"watch",note:"Elected 8 Mar 2026. Never held office or faced a vote. Visibility is the tell."},
+ I04:{status:"watch",note:"Combined economic and control stress. Track rial against NetBlocks connectivity data."},
+ M12:{status:"watch",note:"Programme damaged, leadership killed, no agreement. IAEA continuity of knowledge is the reporting cycle to watch."},
+ S01:{status:"watch",note:"Maduro removed by force 3 Jan 2026. Whether Venezuela produces oil or an insurgency is still open."},
+ W02:{status:"watch",note:"NOT triggered. Langtang Lirung (26 Aug 2026, ~1,400 dead, 5,000+ missing) met every condition except the disputed-basin clause — Nepal-Tibet is not disputed. That distinction is the indicator's entire point. Scientists say a second failure at the same site is possible."},
+
+ /* ── EXPLICITLY DORMANT · tested and held ── */
+ F04:{status:"dormant",note:"TESTED AND HELD. 16 Sep 2026: unanimous 25bp hike to 3.75-4% directly against an explicit presidential demand for rates 'to 1% or below'. Strongest available evidence that independence is intact. Re-evaluate if dissents appear or the SEP softens without data support."},
+ F03:{status:"dormant",note:"NOT triggered despite appearances. Yields at 5% during an oil shock is inflation repricing, not flight from the dollar — yields FELL after the hawkish hike, the textbook credibility-intact response. Only mark this if gold and CHF rally while Treasuries sell off on a genuine risk-off day."},
+ M09:{status:"dormant",note:"Moving the wrong way for the indicator: US military is actively assisting Saudi crude movement through Hormuz as of Sep 2026. Engagement up, not down."}
+};
+
 /* ══════════════ STATE ══════════════ */
 const KEY="sic.v1";
 let ST={}, open=new Set(), F={t:null,s:null}, Q="";
 
-function load(){try{const r=localStorage.getItem(KEY);if(r)ST=JSON.parse(r)||{}}catch(e){ST={}}}
+function load(){
+  try{const r=localStorage.getItem(KEY);
+    if(r){ST=JSON.parse(r)||{};return}
+  }catch(e){}
+  /* first run: seed the 17 Sep 2026 baseline */
+  ST=JSON.parse(JSON.stringify(SEED));
+  save();
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
 const stat=id=>(ST[id]&&ST[id].status)||"dormant";
 const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML};
@@ -661,8 +717,13 @@ document.getElementById("file").addEventListener("change",e=>{
   r.readAsText(f);e.target.value="";
 });
 document.getElementById("clr").addEventListener("click",()=>{
-  if(confirm("Clear all statuses and notes?")){ST={};save();render();
-    document.getElementById("brief").className=""}
+  if(confirm("Clear all statuses and notes? This empties the board completely — use Baseline to restore the 17 Sep 2026 assessment.")){
+    ST={};save();render();document.getElementById("brief").className=""}
+});
+document.getElementById("base").addEventListener("click",()=>{
+  if(confirm("Restore the 17 Sep 2026 baseline assessment? This overwrites your current statuses and notes.")){
+    ST=JSON.parse(JSON.stringify(SEED));save();render();
+    document.getElementById("brief").className="";}
 });
 
 load();chips();render();
